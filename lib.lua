@@ -158,13 +158,13 @@ local function fetchIcon(url)
             if ok and type(data)=="string" and #data>8 and sub(data,1,4)=="\137PNG" then
                 IconCache[url]=data; IconRetry[url]=nil
             else
-                IconCache[url]=false; IconRetry[url]={n=1,t=tick()}
+                IconCache[url]=false; IconRetry[url]={n=1,t=os.clock()}
                 if errorl then errorl("[ObsidianLib] icon fetch failed, retrying: "..url) end
             end
         end)
     end
-    if IconCache[url]==false and IconRetry[url] and IconRetry[url].n<50 and tick()-IconRetry[url].t>=2.5 then
-        IconRetry[url].t=tick(); IconRetry[url].n=IconRetry[url].n+1
+    if IconCache[url]==false and IconRetry[url] and IconRetry[url].n<50 and os.clock()-IconRetry[url].t>=2.5 then
+        IconRetry[url].t=os.clock(); IconRetry[url].n=IconRetry[url].n+1
         local attempt=IconRetry[url].n
         IconCache[url]="fetching"
         task.spawn(function()
@@ -185,13 +185,13 @@ local EH={Tgl=18,Chk=18,Btn=21,Sld=33,RSld=33,MC=21,DD=39,Inp=39,Lbl=18,Div=6,CP
 local function _kbSet(arr) local s={}; if arr then for _,k in ipairs(arr) do s[k]=true end; return s end end
 local function _kbModeShown(kd)
     if not kd or not kd.Modes or #kd.Modes<2 then return false end
-    if not kd._modeShownTick or tick()-kd._modeShownTick>5 then return false end
+    if not kd._modeShownTick or os.clock()-kd._modeShownTick>5 then return false end
     return true
 end
 local function _kbModeSfx(kd) if not _kbModeShown(kd) then return"" end; return" ["..(kd.Mode and sub(kd.Mode,1,1) or"T").."]" end
 local function _kbRClick(kd)
-    local now=tick(); local last=kd._lastRClick or 0
-    if kd._modeShownTick and tick()-kd._modeShownTick<=5 and now-last<0.4 and kd.Modes and #kd.Modes>1 then
+    local now=os.clock(); local last=kd._lastRClick or 0
+    if kd._modeShownTick and os.clock()-kd._modeShownTick<=5 and now-last<0.4 and kd.Modes and #kd.Modes>1 then
         local cur=1
         for i,m in ipairs(kd.Modes) do if m==kd.Mode then cur=i; break end end
         kd.Mode=kd.Modes[(cur%#kd.Modes)+1]
@@ -464,7 +464,7 @@ function Library:CreateWindow(cfg)
     if ldCfg~=false then
         local isCustom=type(ldCfg)=="table"
         local totalSteps=isCustom and #ldCfg or 3
-        self._loading={Title=self.Window.Title,Step=0,Total=totalSteps,SmoothStep=0,Message="Initializing...",Description="",Alive=true,Angle=0,LastTick=tick(),Pos=v2(0,0),W=450,H=275,CR=self.Window.CR,TweenTime=1}
+        self._loading={Title=self.Window.Title,Step=0,Total=totalSteps,SmoothStep=0,Message="Initializing...",Description="",Alive=true,Angle=0,LastTick=os.clock(),Pos=v2(0,0),W=450,H=275,CR=self.Window.CR,TweenTime=1}
         for _,c in pairs(self.Drawings) do if c.P.Visible then c.O.Visible=false; c.P.Visible=false end end
         pcall(function() local vp=workspace.CurrentCamera.ViewportSize; if vp.X>0 and vp.Y>0 then self._loading.Pos=v2(floor((vp.X-450)/2),floor((vp.Y-275)/2)) end end)
         task.spawn(function()
@@ -484,10 +484,10 @@ function Library:CreateWindow(cfg)
                 pcall(function() local p=plr(); if p and p.Character then p.Character:WaitForChild("HumanoidRootPart",5) end end)
                 pcall(function() workspace:WaitForChild("Camera",5) end)
                 ld.Description="Initializing interface"
-                local t0=tick(); while not self._R and tick()-t0<10 do task.wait(0.05) end
+                local t0=os.clock(); while not self._R and os.clock()-t0<10 do task.wait(0.05) end
                 task.wait(0.1)
-                local deadline=tick()+15
-                while tick()<deadline do
+                local deadline=os.clock()+15
+                while os.clock()<deadline do
                     local total,done=0,0
                     for _,iv in pairs(IconCache) do total=total+1; if iv~="fetching" then done=done+1 end end
                     if cfg.Icon then total=total+1; if self.Window._titleIconDone then done=done+1 end end
@@ -870,7 +870,7 @@ end
 function Library:Step()
     if not isrbxactive() then return end
     self.State.Tick=self.State.Tick+1
-    local _tick=tick(); self._tick=_tick
+    local _tick=os.clock(); self._tick=_tick
     local S,I=self.State,self.Input
     local Flags,Toggles,Keybinds,Callbacks=self.Flags,self.Toggles,self.Keybinds,self.Callbacks
     local mx,my=50,50; I.MX=mx; I.MY=my; _imx=mx; _imy=my
@@ -2759,7 +2759,7 @@ function Library:_StepLoading()
     local FNT50,SHADOW=COL.FONT50,COL.SHADOW
     local R=L.CR; local R2=max(floor(R/2),0); local R2inner=max(R2-1,0)
     pcall(function() local vp=workspace.CurrentCamera.ViewportSize; if vp.X>0 and vp.Y>0 then L.Pos=v2(floor((vp.X-L.W)/2),floor((vp.Y-L.H)/2)) end end)
-    local px,py,w,h=L.Pos.X,L.Pos.Y,L.W,L.H; local ct=tick()
+    local px,py,w,h=L.Pos.X,L.Pos.Y,L.W,L.H; local ct=os.clock()
 
     self:RR("ld_dk",px-1,py-1,w+2,h+2,R+1,SHADOW,58)
     self:RR("ld_ol",px,py,w,h,R,OL,59)
@@ -2770,7 +2770,7 @@ function Library:_StepLoading()
 
     local cx,cy=px+w/2,py+48+(h-48-80)/2+20
     local iconR=22; local numSegs=24; local arcLen=18
-    local now=tick(); local dt=now-(L.LastTick or now); L.LastTick=now
+    local now=os.clock(); local dt=now-(L.LastTick or now); L.LastTick=now
     if L.TweenTime>0 then L.Angle=(L.Angle+dt*(360/L.TweenTime))%360 end
     for i=1,numSegs do
         local a1=rad(L.Angle+(i-1)*(360/numSegs))
@@ -2822,7 +2822,7 @@ function Library:Notify(info)
         Steps=info.Steps,
         Persist=info.Persist,
         Color=info.Color,
-        St=tick(),
+        St=os.clock(),
         Destroyed=false,
         _step=0,
     }
@@ -2830,8 +2830,8 @@ function Library:Notify(info)
     function NI:ChangeTitle(t) n.Title=t end
     function NI:ChangeDescription(t) n.Desc=t end
     function NI:ChangeStep(s) n._step=clamp(s,0,n.Steps or 1) end
-    function NI:Destroy() n.Destroyed=true; n._destroyTick=tick() end
-    function NI:DestroyAfter(t) n._destroyAt=tick()+t end
+    function NI:Destroy() n.Destroyed=true; n._destroyTick=os.clock() end
+    function NI:DestroyAfter(t) n._destroyAt=os.clock()+t end
     self.Notifications[#self.Notifications+1]=n
     return NI
 end
@@ -2951,7 +2951,7 @@ function Library:Dialog(info)
         Alive=true,
         Scale=0.92,
         Alpha=0,
-        StartTick=tick(),
+        StartTick=os.clock(),
         _justOpened=true,
     }
     local btns={}
@@ -2959,7 +2959,7 @@ function Library:Dialog(info)
         btns[#btns+1]={
             Id=k, Title=b.Title or k, Variant=b.Variant or"Primary",
             Order=b.Order or 0, WaitTime=b.WaitTime or 0, Callback=b.Callback,
-            Disabled=false, _startTick=tick()
+            Disabled=false, _startTick=os.clock()
         }
     end
     table.sort(btns,function(a,b) return(a.Order or 0)<(b.Order or 0) end)
@@ -2970,11 +2970,11 @@ function Library:Dialog(info)
     d.Els=DI.Els
     function DI:SetTitle(t) d.Title=t end
     function DI:SetDescription(t) d.Desc=t end
-    function DI:Dismiss() d.Alive=false; d._dismissTick=tick() end
+    function DI:Dismiss() d.Alive=false; d._dismissTick=os.clock() end
     function DI:SetButtonDisabled(id,disabled) for _,b in ipairs(d.Btns) do if b.Id==id then b.Disabled=disabled; break end end end
     function DI:AddFooterButton(id,cfg) cfg=cfg or{}
         for i,b in ipairs(d.Btns) do if b.Id==id then remove(d.Btns,i); break end end
-        d.Btns[#d.Btns+1]={Id=id,Title=cfg.Title or id,Variant=cfg.Variant or"Primary",Order=cfg.Order or 0,WaitTime=cfg.WaitTime or 0,Callback=cfg.Callback,Disabled=cfg.Disabled==true,_startTick=tick()}
+        d.Btns[#d.Btns+1]={Id=id,Title=cfg.Title or id,Variant=cfg.Variant or"Primary",Order=cfg.Order or 0,WaitTime=cfg.WaitTime or 0,Callback=cfg.Callback,Disabled=cfg.Disabled==true,_startTick=os.clock()}
         table.sort(d.Btns,function(a,b) return(a.Order or 0)<(b.Order or 0) end)
     end
     function DI:RemoveFooterButton(id)
@@ -2984,7 +2984,7 @@ function Library:Dialog(info)
         for _,b in ipairs(d.Btns) do if b.Id==id then b.Order=order; break end end
         table.sort(d.Btns,function(a,b) return(a.Order or 0)<(b.Order or 0) end)
     end
-    function DI:SetButtonWaitTime(id,t) for _,b in ipairs(d.Btns) do if b.Id==id then b.WaitTime=t; b._startTick=tick(); break end end end
+    function DI:SetButtonWaitTime(id,t) for _,b in ipairs(d.Btns) do if b.Id==id then b.WaitTime=t; b._startTick=os.clock(); break end end end
     function DI:SetButtonTitle(id,t) for _,b in ipairs(d.Btns) do if b.Id==id then b.Title=t; break end end end
     function DI:GetValue(id) return Library.Flags[id] end
     d._interface=DI
