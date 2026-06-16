@@ -874,7 +874,7 @@ function Library:Step()
     local S,I=self.State,self.Input
     local Flags,Toggles,Keybinds,Callbacks=self.Flags,self.Toggles,self.Keybinds,self.Callbacks
     local mx,my=50,50; I.MX=mx; I.MY=my; _imx=mx; _imy=my
-    I.Down=ismouse1pressed(); I.Click=I.Down and not I.Prev
+    I.Down=is_mouse_down(1); I.Click=I.Down and not I.Prev
     local ism2=ismouse2pressed; I.RDown=ism2 and ism2() or false; I.RClick=I.RDown and not I.RPrev
 
     local _fullScan=S.KBListen or S.FocusInput or S.SearchFocused
@@ -2753,7 +2753,7 @@ function Library:_StepLoading()
     local L=self._loading; if not L or not L.Alive then return end
     local S,I=self.State,self.Input; S.Tick=S.Tick+1
     local mx,my=50,50; I.MX=mx; I.MY=my; _imx=mx; _imy=my
-    I.Down=ismouse1pressed(); I.Click=I.Down and not I.Prev
+    I.Down=is_mouse_down(1); I.Click=I.Down and not I.Prev
     local BG,BG_DK,MAIN=COL.BG,COL.BG_DK,COL.MAIN
     local OL,ACC,FNT=COL.OUTLINE,COL.ACCENT,COL.FONT
     local FNT50,SHADOW=COL.FONT50,COL.SHADOW
